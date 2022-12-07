@@ -2,7 +2,7 @@
 
 ## BIFXML file format
 The BIFXML file format is meant to provide an easy means of exchanging Bayesian networks. It works with standard XML
-tags. The detailed description of the format can be found at 
+tags. The detailed description of the format can be found at this beautiful link called
 http://www.cs.cmu.edu/afs/cs/user/fgcozman/www/Research/InterchangeFormat/. Please read this carefully. 
 Note that for our purposes it will be enough to only have nodes of type "nature", and we will not need the `<Property>`
 tag. 

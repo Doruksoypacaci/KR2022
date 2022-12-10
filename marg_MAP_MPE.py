@@ -7,7 +7,7 @@ net.load_from_bifxml("testing/dog_problem.BIFXML")
 
 
 # function to calculate the marginal distribution, the MAP, or the MPE (func = 'marginal', 'MAP', 'MPE')
-def marginal_dis(self, Q, evidence, func):
+def md_MAP_MPE(self, Q, evidence, func):
 
     # Q = list of variables (e.g. ['light-on']), but can be empty in case of MPE
     # evidence = a dictionary of the evidence e.g. {'hear-bark': True} or empty {}
@@ -91,5 +91,5 @@ def marginal_dis(self, Q, evidence, func):
     else:
         return joint_prob
 
-test = marginal_dis(net, [], {'hear-bark': True}, "MPE")
+test = md_MAP_MPE(net, [], {'hear-bark': True}, "MPE")
 print(test)

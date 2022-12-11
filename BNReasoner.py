@@ -1,4 +1,20 @@
 # Packages
+from typing import Union
+from BayesNet import BayesNet
+import pandas as pd
+from itertools import combinations, product
+from typing import Union
+from BayesNet import BayesNet
+from collections import defaultdict
+from itertools import product, combinations, groupby
+import networkx as nx
+import pandas as pd
+import numpy as np
+import math
+import copy
+import random
+import ttg
+from BayesNet import BayesNet
 import pandas as pd
 import math
 import itertools
@@ -36,13 +52,139 @@ class BNReasoner:
     # MAP: Compute the maximum a-posteriory instantiation + value of query variables Q, given a possibly empty evidence e. (3pts)
     # MEP: Compute the most probable explanation given an evidence e. (1.5pts)
 
+    def multiply_factors(self, factor1,factor2):
+
+            cols_1=list(factor1.columns)
+            cols_2=list(factor2.columns)
+            new_col=cols_1
+            counter=0
+            for i in cols_2:
+                if i not in new_col:
+                    new_col.append(i)
+                elif i!="p":
+                    counter+=1
+            new_table = ttg.Truths(new_col,ints=False)
+            new_p_col=[]
+            if counter==0:
+                for x in (factor1["p"].tolist()):
+                    for y in (factor2["p"].tolist()):
+                        new_p_col.append(x*y)
+                new_table["p"]=new_p_col
+            else:
+                True
+                #common variable should discarded and then the same multiplication should be done
+            return new_table.as_pandas()
+
+    def Variable_el(self, cpt, X):
+        for lbl in X:
+            cpt=cpt.drop(columns=lbl)
+        sum_out=cpt
+        vars_without_X=list(sum_out.columns)
+        Var_el_sum_out = sum_out.groupby(vars_without_X).sum().reset_index()
+        return Var_el_sum_out
+
+
+    
+    def max_out (self, cpt, X):
+        maximized_out = cpt.groupby(X).max().reset_index()
+        return maximized_out
+
+
+
+    def md_MAP_MPE(self, Q, evidence, func):
+
+        # Q = list of variables (e.g. ['light-on']), but can be empty in case of MPE
+        # evidence = a dictionary of the evidence e.g. {'hear-bark': True} or empty {}
+        # posterior marginal: P(Q|evidence) / P(evidence)
+        # MAP: sum out V/Q and then max-out Q (argmax)
+        # MPE: maximize out all variables with extended factors
+
+        variables = []
+
+        # create a list of variables which are not in Q
+        if Q != []:
+            for var in self.bn.get_all_variables():
+                if var != Q[0]:
+                    variables.append(var)
+        
+        # prune the network given the evidence (# reduce all the factors w.r.t. evidence)
+        self.network_pruning(Q,pd.Series(evidence)) # this function is not yet implemented #Doruk changed it
+
+        # compute the probability of the evidence
+        e_factor = 1
+        for e in evidence:
+            evidence_probability = self.bn.get_cpt(e)
+            e_factor = e_factor * self.bn.get_cpt(e)['p'].sum()
+        
+        # retrieve all the cpts and delete them accordingly
+        M = self.bn.get_all_cpts()
+
+        factor = 0
+
+        # loop over every variable which is not in Q and create an empty dictionary
+        for v in variables:
+            f_v = {}
+            
+            # loop over every cpt and check if the variable is in the cpt and if so, add it to the dictionary
+            for cpt_v in M: 
+                if v in M[cpt_v]:
+                    f_v[cpt_v] = M[cpt_v]
+            
+            # sum-out Q to obtain probability of evidence and to elimate the variables
+            # only multiply when there are more than one cpt
+            if len(f_v) >= 2:
+                input = list(f_v.values())
+                m_cpt = self.multiply_factors(input[0],input[1])
+                new_cpt = self.Variable_el(m_cpt, [v])           
+
+                # delete the variables from the dictionary M
+                for f in f_v:
+                    del M[f]
+                
+                # add the new cpt to the dictionary M
+                factor +=1
+                M["F"+str(factor)] = new_cpt
+            
+            # skip multiplication when there is only one cpt
+            elif len(f_v) == 1:
+                new_cpt = self.Variable_el(list(f_v.values())[0], [v])
+                
+                # delete the variables from the dictionary M
+                for f in f_v:
+                    del M[f]
+                
+                # add the new cpt to the dictionary M
+                factor +=1
+                M["F "+str(factor)] = new_cpt
+
+        # compute joint probability of Q and evidence
+        if len(M) > 1:
+            input = list(M.values())
+            joint_prob = self.multiply_factors(input[0],input[1])
+        else:
+            joint_prob = list(M.values())[0]
+        
+        # divide by the probability of the evidence
+        joint_prob['p'] = joint_prob['p'] / (e_factor)
+
+        # check what is expected of the function
+        if func == 'marginal':
+            return joint_prob
+        if func == 'MAP':
+            return joint_prob.iloc[joint_prob['p'].argmax()]
+        if func == 'MPE':
+            return joint_prob.iloc[joint_prob['p'].astype(float).argmax()]
+        else:
+            return joint_prob
+
     def network_pruning(self, Query: List[str], Evidence: pd.Series) -> bool:
 
         """
         Given a set of query variables Q and evidence e, node- and edge-prune the Bayesian network s.t. queries of the form P(Q|E) can still be correctly calculated.
         """
 
-        # First create a deepcopy of the structure of BN
+        # # First create a deepcopy of the structure of BN
+        # self.bn = BayesNet()
         bn_copy = deepcopy(self.bn) 
 
         # Combine the Query and Evidence states
@@ -141,3 +283,9 @@ class BNReasoner:
         cpt = factor_copy.div(factor_copy.sum(axis = 1), axis = 0)
 
         return cpt
+
+# call the class and call in the functions you need with net.
+if __name__ == "__main__":
+    net = BNReasoner("testing/dog_problem.BIFXML")
+    test = net.md_MAP_MPE(['light-on'], {'hear-bark': True}, "marginal")
+    print(test)

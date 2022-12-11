@@ -46,7 +46,7 @@ class BNReasoner:
         bn_copy = deepcopy(self.bn) 
 
         # Combine the Query and Evidence states
-        combined_states = Query + Evidence.index.tolist()
+        combined_states = set(Query) | set(Evidence.index)
 
         # Node-Pruning: Only keep the leaves that are in either the Query or Evidence & repeat as often as possible
         while True:

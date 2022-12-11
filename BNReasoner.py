@@ -36,7 +36,7 @@ class BNReasoner:
     # MAP: Compute the maximum a-posteriory instantiation + value of query variables Q, given a possibly empty evidence e. (3pts)
     # MEP: Compute the most probable explanation given an evidence e. (1.5pts)
 
-   def network_pruning(self, Query: List[str], Evidence: pd.Series) -> bool:
+    def network_pruning(self, Query: List[str], Evidence: pd.Series) -> bool:
 
         """
         Given a set of query variables Q and evidence e, node- and edge-prune the Bayesian network s.t. queries of the form P(Q|E) can still be correctly calculated.
@@ -77,7 +77,6 @@ class BNReasoner:
 
 
     def d_separation(self, X: List[str], Z: List[str], Y: List[str]) -> bool:
-
         """
         Given three sets of variables X, Y, and Z, determine whether X is d-separated of Y given Z.
         """
@@ -131,7 +130,7 @@ class BNReasoner:
         """
         Given a factor and a variable X, compute the CPT in which X is summed-out
         """
-
+        
         # Create a copy of the factor
         factor_copy = deepcopy(factor)
 
@@ -142,6 +141,3 @@ class BNReasoner:
         cpt = factor_copy.div(factor_copy.sum(axis = 1), axis = 0)
 
         return cpt
-
-
-

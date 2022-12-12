@@ -50,7 +50,6 @@ class BNReasoner:
         i = 1
 
         # loop over the variables (dataframes of cpts)
-        # for i in range(1, len(variables)):
         while thresh != 0:
             thresh -= 1
             factor_2 = variables[i]

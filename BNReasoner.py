@@ -39,7 +39,21 @@ class BNReasoner:
     # Marginal Distributions: Given query variables Q and possibly empty evidence e, compute the marginal distribution P(Q|e). Note that Q is a subset of the variables in the Bayesian network X with Q ⊂ X but can also be Q = X. (2.5pts)
     # MAP: Compute the maximum a-posteriory instantiation + value of query variables Q, given a possibly empty evidence e. (3pts)
     # MEP: Compute the most probable explanation given an evidence e. (1.5pts)
+    
+   
+    def ordering(self, Q):
 
+        # Q is a list of variables in the network (e.g. ['light-on', 'dog-out])
+        order = []
+
+        # delete all variables which are in Q 
+        if Q != []:
+            for var in self.bn.get_all_variables():
+                if var not in Q:
+                    order.append(var)
+
+        return order
+    
     def multiplying(self, variables):
 
         # variables is a list of dataframes of cpts
@@ -107,13 +121,8 @@ class BNReasoner:
         # MAP: sum out V/Q and then max-out Q (argmax)
         # MPE: maximize out all variables with extended factors
 
-        variables = []
-
-        # create a list of variables which are not in Q
-        if Q != []:
-            for var in self.bn.get_all_variables():
-                if var != Q[0]:
-                    variables.append(var)
+        variables = self.ordering(Q)
+        
         
         # prune the network given the evidence (# reduce all the factors w.r.t. evidence)
         self.network_pruning(Q,pd.Series(evidence)) # this function is not yet implemented #Doruk changed it

@@ -39,7 +39,6 @@ class BNReasoner:
     # Marginal Distributions: Given query variables Q and possibly empty evidence e, compute the marginal distribution P(Q|e). Note that Q is a subset of the variables in the Bayesian network X with Q ⊂ X but can also be Q = X. (2.5pts)
     # MAP: Compute the maximum a-posteriory instantiation + value of query variables Q, given a possibly empty evidence e. (3pts)
     # MEP: Compute the most probable explanation given an evidence e. (1.5pts)
-    
    
     def ordering(self, Q):
 
@@ -104,14 +103,11 @@ class BNReasoner:
         vars_without_X=list(sum_out.columns)
         Var_el_sum_out = sum_out.groupby(vars_without_X).sum().reset_index()
         return Var_el_sum_out
-
-
     
     def max_out (self, cpt, X):
         maximized_out = cpt.groupby(X).max().reset_index()
         return maximized_out
-
-
+    
 
     def md_MAP_MPE(self, Q, evidence, func):
 
@@ -281,24 +277,22 @@ class BNReasoner:
 
         return False
 
-
     @staticmethod
-    def marginalization(factor: pd.DataFrame,  variable: str) -> pd.DataFrame:
+    def marginalization(cpt: pd.DataFrame, variable: list[str]):
 
         """
-        Given a factor and a variable X, compute the CPT in which X is summed-out
+        Given a factor and a variable X, compute the CPT in which X is summed-out.
         """
-        
-        # Create a copy of the factor
-        factor_copy = deepcopy(factor)
 
-        # Sum over the variable
-        factor_copy = factor_copy.groupby(factor_copy.columns.difference([variable])).sum()
+        # Drop the variable(s) in question
+        dropped = cpt.drop(variable, axis=1)
 
-        # Normalize the factor
-        cpt = factor_copy.div(factor_copy.sum(axis = 1), axis = 0)
+        # Group by the remaining variables and sum over the dropped variable(s)
+        newcpt_vars = [v for v in cpt.columns.tolist()[:-1] if v not in variable]
+        newcpt = dropped.groupby(newcpt_vars).sum().reset_index()
 
-        return cpt
+        return newcpt
+    
 
 if __name__ == "__main__":
     net = BNReasoner("testing/dog_problem.BIFXML")

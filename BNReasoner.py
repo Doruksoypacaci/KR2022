@@ -1,10 +1,4 @@
 # Packages
-from typing import Union
-from BayesNet import BayesNet
-import pandas as pd
-from itertools import combinations, product
-from typing import Union
-from BayesNet import BayesNet
 from collections import defaultdict
 from itertools import product, combinations, groupby
 import networkx as nx
@@ -13,15 +7,9 @@ import numpy as np
 import math
 import copy
 import random
-import ttg
-from BayesNet import BayesNet
-import pandas as pd
-import math
-import itertools
 from copy import deepcopy
 from BayesNet import BayesNet
 from typing import List, Tuple, Dict, Union
-import networkx as nx
 import matplotlib.pyplot as plt
 from pgmpy.readwrite import XMLBIFReader
 
@@ -52,28 +40,49 @@ class BNReasoner:
     # MAP: Compute the maximum a-posteriory instantiation + value of query variables Q, given a possibly empty evidence e. (3pts)
     # MEP: Compute the most probable explanation given an evidence e. (1.5pts)
 
-    def multiply_factors(self, factor1,factor2):
+    def multiplying(self, variables):
 
-            cols_1=list(factor1.columns)
-            cols_2=list(factor2.columns)
-            new_col=cols_1
-            counter=0
-            for i in cols_2:
-                if i not in new_col:
-                    new_col.append(i)
-                elif i!="p":
-                    counter+=1
-            new_table = ttg.Truths(new_col,ints=False)
-            new_p_col=[]
-            if counter==0:
-                for x in (factor1["p"].tolist()):
-                    for y in (factor2["p"].tolist()):
-                        new_p_col.append(x*y)
-                new_table["p"]=new_p_col
-            else:
-                True
-                #common variable should discarded and then the same multiplication should be done
-            return new_table.as_pandas()
+        # variables is a list of dataframes of cpts
+        # first item in variables is the dataframe you want to multiply with the other dataframes
+
+        # set the threshold for the while loop (the length of variables - the first dataframe)
+        thresh = len(variables) - 1
+        i = 1
+
+        # loop over the variables (dataframes of cpts)
+        # for i in range(1, len(variables)):
+        while thresh != 0:
+            thresh -= 1
+            factor_2 = variables[i]
+            i += 1
+
+            # create two lists of the columns of the two cpts you want to multiply, but exclude the last column (p)
+            list_factor2 = factor_2.columns.values.tolist()[0:-1]
+            list_factor1 = variables[0].columns.values.tolist()[0:-1]
+
+            # check on what variable the lists match and append those to a new list
+            overlapping_elements = []
+            for element in list_factor2:
+                if element in list_factor1:
+                    overlapping_elements.append(element)
+            
+            # only multiply if there is overlap
+            if len(overlapping_elements) > 0:
+
+                # merg the two cpts based on the matching elements
+                # this creates two new columns (p_x and p_y) with the probabilities of the two cpts
+                new_table = pd.merge(factor_2, variables[0], how='left', on=overlapping_elements)
+
+                # compute the new probabilities by multiplying the p columns of the two cpts
+                new_table['p'] = (new_table['p_x'] * new_table['p_y'])
+
+                # drop the newly created p_x and p_y columns
+                new_table.drop(['p_x', 'p_y'],inplace=True, axis = 1)
+                    
+                # replace the old probabilities with the new one
+                variables[0] = new_table
+        
+        return variables[0]
 
     def Variable_el(self, cpt, X):
         for lbl in X:
@@ -133,8 +142,7 @@ class BNReasoner:
             # sum-out Q to obtain probability of evidence and to elimate the variables
             # only multiply when there are more than one cpt
             if len(f_v) >= 2:
-                input = list(f_v.values())
-                m_cpt = self.multiply_factors(input[0],input[1])
+                m_cpt = self.multiplying(list(f_v.values()))
                 new_cpt = self.Variable_el(m_cpt, [v])           
 
                 # delete the variables from the dictionary M
@@ -284,7 +292,6 @@ class BNReasoner:
 
         return cpt
 
-# call the class and call in the functions you need with net.
 if __name__ == "__main__":
     net = BNReasoner("testing/dog_problem.BIFXML")
     test = net.md_MAP_MPE(['light-on'], {'hear-bark': True}, "marginal")

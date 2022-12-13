@@ -305,6 +305,7 @@ class BNReasoner:
 
         # Check if heuristic that is given is correct
         heuristics = ["mindegree", "minfill"]
+        # heuristics = ["mindegree", "minfill", "random"]
         assert heuristic in heuristics, f"Heuristic given must be in {heuristics}"
 
         # This function depicts the heuristic that is utilized to order the nodes

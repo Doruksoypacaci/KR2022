@@ -9,7 +9,7 @@ import copy
 import random
 from copy import deepcopy
 from BayesNet import BayesNet
-from typing import List, Tuple, Dict, Union
+from typing import List, Tuple, Dict, Union, Optional
 import matplotlib.pyplot as plt
 from pgmpy.readwrite import XMLBIFReader
 
@@ -179,7 +179,7 @@ class BNReasoner:
         
         return variables[0]
 
-    def order(self, X: Optional[List[str]] = None, heuristic: str = "mindegree", order_asc: bool = True,) -> List[str]:
+    def order(self, N: Optional[List[str]] = None, heuristic: str = "mindegree", order_asc: bool = True,) -> List[str]:
         """
         Given a set of variables X in the Bayesian network, compute a good ordering for the elimination of X 
         based on the min-degree heuristics (2pts) and the min-fill heuristics (3.5pts). 

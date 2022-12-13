@@ -116,6 +116,8 @@ class BNReasoner:
         # posterior marginal: P(Q|evidence) / P(evidence)
         # MAP: sum out V/Q and then max-out Q (argmax)
         # MPE: maximize out all variables with extended factors
+        
+        # order the variables based on the heuristic
         if heuristic == "random":
             variables = self.ordering(Q)
         if heuristic == "mindeg":

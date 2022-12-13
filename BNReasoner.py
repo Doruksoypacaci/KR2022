@@ -51,7 +51,7 @@ class BNReasoner:
                 if var not in Q:
                     order.append(var)
 
-        return random.shuffle(order)
+        return random.sample(new_order, len(new_order))
     
     def multiplying(self, variables):
 

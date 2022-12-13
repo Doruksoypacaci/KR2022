@@ -293,6 +293,97 @@ class BNReasoner:
 
         return newcpt
     
+    def order(self, X: Optional[List[str]] = None, heuristic: str = "mindeg", order_asc: bool = True,) -> List[str]:
+        
+        """
+        Given a set of variables X in the Bayesian network, compute a good ordering for the elimination of X 
+        based on the min-degree heuristics (2pts) and the min-fill heuristics (3.5pts). 
+        """
+        # Get all nodes and get the converted graph from directed to undirected graph 
+        nodes = self.bn.get_all_variables()
+        graph = self.bn.structure.to_undirected()
+
+        # Check if heuristic that is given is correct
+        heuristics = ["mindegree", "minfill"]
+        assert heuristic in heuristics, f"Heuristic given must be in {heuristics}"
+
+        # This function depicts the heuristic that is utilized to order the nodes
+        order_heuristic = getattr(self, f"_{heuristic}_heuristic")
+
+        # If N is None, and we can't find any nodes, we want all nodes
+        if N is None:
+            N = nodes.copy()
+
+        # Dict where the nodes are keys and the values are its neighboring nodes 
+        d_neighbors = self._neighbour(graph)
+
+        # Drop the unrelevant nodes from d_neighbors
+        for node in [node for node in nodes if node not in N]:
+            self._rm_neighbour(d_neighbors, node)
+
+        # If we want to order low -> high we want the minimum, and if we want to order high -> low we want the maximum 
+        selection = min if order_asc else max
+
+        # Create an empty list for the ordering
+        ordering = []
+
+        # Loop over the length of dictionary d_neighbors
+        for _ in range(len(d_neighbors)):
+
+            # Select the node to eliminate from G based on heuristic
+            node_elim = selection(d_neighbors, key=lambda x: order_heuristic(d_neighbors, x))
+
+            # Remove node to eliminate from the graph
+            self._rm_adj(d_neighbors, node_elim)
+
+            # Add node to eliminate to ordering
+            ordering.append(node_elim)
+
+        return ordering
+
+    # @staticmethod
+    # def _random_heuristic(*_) -> float:
+    #     return random.uniform(0, 1)
+
+    # Mindegree ordering is based on the number of neighbors a node has
+    @staticmethod
+    def _mindegree_heuristic(neighbouring, node) -> int:
+        return len(neighbouring[node])
+
+    # Minfill ordering is based on the number of edges that are added when a certain node is removed    ## Minfill is the amount of edges that need to be added to remove a node
+    @staticmethod
+    def _minfill_heuristic(neighbouring: Dict[str, set], node: str) -> int:
+        edge_counter = 0
+        for i, j in itertools.combinations(neighbouring[node], 2):
+            if i not in neighbouring[j]:
+                edge_counter += 1
+
+        return edge_counter
+
+    # Create a dictionary where the keys are the nodes, and the values a set of neighbouring nodes 
+    @staticmethod
+    def _neighbour(graph: Graph) -> Dict[str, set]:
+        return {v: set(graph[v]) - set([v]) for v in graph}
+
+    # Remove a specific variable after which edges are added between the neighbours of the variable node
+    @staticmethod
+    def _rm_neighbour(neighbour: Dict[str, set], node: str) -> None:
+        neighbors = neighbour[node]
+
+        # Make the edges between the neighbours of the variable node
+        for n1, n2 in itertools.combinations(neighbors, 2):
+            if n2 not in neighbour[n1]:
+                neighbour[n1].add(n2)
+                neighbour[n2].add(n1)
+
+        # Delete the node from the dictionary for the neighbours
+        for n2 in neighbors:
+            neighbour[n2].discard(node)
+
+        # Delete the node from the dictionary neighbour dictionary
+        del neighbour[node]
+        
+        
 
 if __name__ == "__main__":
     net = BNReasoner("testing/dog_problem.BIFXML")

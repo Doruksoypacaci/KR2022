@@ -7,6 +7,7 @@ import numpy as np
 import math
 import copy
 import random
+import itertools
 from copy import deepcopy
 from BayesNet import BayesNet
 from typing import List, Tuple, Dict, Union, Optional
@@ -189,8 +190,7 @@ class BNReasoner:
         graph = self.bn.structure.to_undirected()
 
         # Check if heuristic that is given is correct
-        heuristics = ["mindegree", "minfill"]
-        # heuristics = ["mindegree", "minfill", "random"]
+        heuristics = ["random", "mindegree", "minfill"]
         assert heuristic in heuristics, f"Heuristic given must be in {heuristics}"
 
         # This function depicts the heuristic that is utilized to order the nodes
@@ -226,6 +226,11 @@ class BNReasoner:
             ordering.append(node_elim)
 
         return ordering
+    
+    # Mindegree ordering is based on a random number between 0 and 1
+    @staticmethod
+    def _random_heuristic(*_) -> float:
+        return random.uniform(0, 1)
 
     # Mindegree ordering is based on the number of neighbors a node has
     @staticmethod
@@ -242,13 +247,9 @@ class BNReasoner:
 
         return edge_counter
 
-    @staticmethod
-    def _random_heuristic(*_) -> float:
-        return random.uniform(0, 1)
-
     # Create a dictionary where the keys are the nodes, and the values a set of neighbouring nodes 
     @staticmethod
-    def _neighbour(graph: Graph) -> Dict[str, set]:
+    def _neighbour(graph: nx.classes.graph.Graph) -> Dict[str, set]:
         return {v: set(graph[v]) - set([v]) for v in graph}
 
     # Remove a specific variable after which edges are added between the neighbours of the variable node
@@ -362,8 +363,8 @@ class BNReasoner:
             return joint_prob
 
     
-    
 if __name__ == "__main__":
     net = BNReasoner("testing/dog_problem.BIFXML")
     test = net.md_MAP_MPE(['light-on'], {'hear-bark': True}, "marginal", "random")
-    print(test)    
+    print(test)     
+    

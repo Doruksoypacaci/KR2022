@@ -96,16 +96,16 @@ class BNReasoner:
         
         return variables[0]
 
-    def Variable_el(self, cpt, X):
+    def Variable_el(self, CPT, X):
         for lbl in X:
-            cpt=cpt.drop(columns=lbl)
-        sum_out=cpt
-        vars_without_X=list(sum_out.columns)
-        Var_el_sum_out = sum_out.groupby(vars_without_X).sum().reset_index()
-        return Var_el_sum_out
+            CPT=CPT.drop(columns=lbl)
+        X_dropped = list(CPT.columns)
+        X_dropped.pop(-1)
+        CPT = CPT.groupby(X_dropped).sum().reset_index()
+        return CPT
     
-    def max_out (self, cpt, X):
-        maximized_out = cpt.groupby(X).max().reset_index()
+    def max_out (self, CPT, X):
+        maximized_out = CPT.groupby(X).max().reset_index()
         return maximized_out
     
 

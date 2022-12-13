@@ -40,7 +40,7 @@ class BNReasoner:
     # MAP: Compute the maximum a-posteriory instantiation + value of query variables Q, given a possibly empty evidence e. (3pts)
     # MEP: Compute the most probable explanation given an evidence e. (1.5pts)
    
-    def ordering(self, Q):
+    def randomorder(self, Q):
 
         # Q is a list of variables in the network (e.g. ['light-on', 'dog-out])
         order = []
@@ -119,11 +119,11 @@ class BNReasoner:
         
         # order the variables based on the heuristic
         if heuristic == "random":
-            variables = self.ordering(Q)
+            variables = self.randomorder(Q)
         if heuristic == "mindeg":
-            variables = self.mindegfunction(Q)
-        if heuristic == "mindfil":
-            variables = self.minfilfunction(Q)
+            variables = self.order(Q, heuristic)
+        if heuristic == "minfil":
+            variables = self.order(Q, heuristic)
         
         
         # prune the network given the evidence (# reduce all the factors w.r.t. evidence)

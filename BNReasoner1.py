@@ -295,7 +295,7 @@ class BNReasoner:
             variables = self.order(Q, heuristic)
         elif heuristic == "mindegree":
             variables = self.order(Q, heuristic)
-        elif heuristic == "minfil":
+        elif heuristic == "minfill":
             variables = self.order(Q, heuristic)
         
         

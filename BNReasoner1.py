@@ -220,7 +220,7 @@ class BNReasoner:
             node_elim = selection(d_neighbors, key=lambda x: order_heuristic(d_neighbors, x))
 
             # Remove node to eliminate from the graph
-            self._rm_adj(d_neighbors, node_elim)
+            self._rm_neighbour(d_neighbors, node_elim)
 
             # Add node to eliminate to ordering
             ordering.append(node_elim)
@@ -282,7 +282,7 @@ class BNReasoner:
         return CPT
     
 
-    def md_MAP_MPE(self, Q, evidence, func):
+    def md_MAP_MPE(self, Q, evidence, func, heuristic):
 
         # Q = list of variables (e.g. ['light-on']), but can be empty in case of MPE
         # evidence = a dictionary of the evidence e.g. {'hear-bark': True} or empty {}
@@ -290,7 +290,13 @@ class BNReasoner:
         # MAP: sum out V/Q and then max-out Q (argmax)
         # MPE: maximize out all variables with extended factors
 
-        variables = self.ordering(Q)
+        # order the variables based on the heuristic
+        if heuristic == "random":
+            variables = self.order(Q, heuristic)
+        elif heuristic == "mindegree":
+            variables = self.order(Q, heuristic)
+        elif heuristic == "minfil":
+            variables = self.order(Q, heuristic)
         
         
         # prune the network given the evidence (# reduce all the factors w.r.t. evidence)
@@ -319,8 +325,8 @@ class BNReasoner:
             # sum-out Q to obtain probability of evidence and to elimate the variables
             # only multiply when there are more than one cpt
             if len(f_v) >= 2:
-                m_cpt = self.multiplying(list(f_v.values()))
-                new_cpt = self.Variable_el(m_cpt, [v])           
+                m_cpt = self.factor_multiplication(list(f_v.values()))
+                new_cpt = self.variable_elimination(m_cpt, [v])           
 
                 # delete the variables from the dictionary M
                 for f in f_v:
@@ -332,7 +338,7 @@ class BNReasoner:
             
             # skip multiplication when there is only one cpt
             elif len(f_v) == 1:
-                new_cpt = self.Variable_el(list(f_v.values())[0], [v])
+                new_cpt = self.variable_elimination(list(f_v.values())[0], [v])
                 
                 # delete the variables from the dictionary M
                 for f in f_v:
@@ -345,7 +351,7 @@ class BNReasoner:
         # compute joint probability of Q and evidence
         if len(M) > 1:
             input = list(M.values())
-            joint_prob = self.multiply_factors(input[0],input[1])
+            joint_prob = self.factor_multiplication([input[0],input[1]])
         else:
             joint_prob = list(M.values())[0]
         

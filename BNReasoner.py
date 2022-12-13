@@ -109,15 +109,19 @@ class BNReasoner:
         return maximized_out
     
 
-    def md_MAP_MPE(self, Q, evidence, func):
+    def md_MAP_MPE(self, Q, evidence, func, heuristic):
 
         # Q = list of variables (e.g. ['light-on']), but can be empty in case of MPE
         # evidence = a dictionary of the evidence e.g. {'hear-bark': True} or empty {}
         # posterior marginal: P(Q|evidence) / P(evidence)
         # MAP: sum out V/Q and then max-out Q (argmax)
         # MPE: maximize out all variables with extended factors
-
-        variables = self.ordering(Q)
+        if heuristics == "random":
+            variables = self.ordering(Q)
+        if heuristics == "mindeg":
+            variables = self.mindegfunction(Q)
+        if heuristics == "mindfil":
+            variables = self.minfilfunction(Q)
         
         
         # prune the network given the evidence (# reduce all the factors w.r.t. evidence)

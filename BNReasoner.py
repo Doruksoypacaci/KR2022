@@ -116,11 +116,11 @@ class BNReasoner:
         # posterior marginal: P(Q|evidence) / P(evidence)
         # MAP: sum out V/Q and then max-out Q (argmax)
         # MPE: maximize out all variables with extended factors
-        if heuristics == "random":
+        if heuristic == "random":
             variables = self.ordering(Q)
-        if heuristics == "mindeg":
+        if heuristic == "mindeg":
             variables = self.mindegfunction(Q)
-        if heuristics == "mindfil":
+        if heuristic == "mindfil":
             variables = self.minfilfunction(Q)
         
         
@@ -392,5 +392,5 @@ class BNReasoner:
 
 if __name__ == "__main__":
     net = BNReasoner("testing/dog_problem.BIFXML")
-    test = net.md_MAP_MPE(['light-on'], {'hear-bark': True}, "marginal")
+    test = net.md_MAP_MPE(['light-on'], {'hear-bark': True}, "marginal", "random")
     print(test)

@@ -273,7 +273,7 @@ class BNReasoner:
         if evidence != {}:
             self.network_pruning(Q, pd.Series(evidence))
         else:
-            self.network_pruning(Q, {})
+            self.network_pruning(Q, pd.Series({}))
 
 
         # compute the probability of the evidence

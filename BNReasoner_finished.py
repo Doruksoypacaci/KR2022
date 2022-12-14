@@ -247,13 +247,19 @@ class BNReasoner:
         return CPT
 
 
-    def md_MAP_MPE(self, Q, evidence, func, heuristic, var_elimination):
+    def md_MAP_MPE(self, Q, evidence, func, heuristic):
 
         # Q = list of variables (e.g. ['light-on']), but can be empty in case of MPE
         # evidence = a dictionary of the evidence e.g. {'hear-bark': True} or empty {}
         # posterior marginal: P(Q|evidence) / P(evidence)
         # MAP: sum out V/Q and then max-out Q (argmax)
         # MPE: maximize out all variables with extended factors
+
+        # get a list of all variables which are not in Q
+        var_elimination = []
+        for v in self.bn.get_all_variables():
+            if v not in Q:
+                var_elimination.append(v)
 
         # order the variables based on the heuristic
         if heuristic == "random":
@@ -280,6 +286,7 @@ class BNReasoner:
         M = self.bn.get_all_cpts()
 
         factor = 0
+
         # loop over every variable which is not in Q and create an empty dictionary
         for v in var_elimination:
             f_v = {}
@@ -378,5 +385,5 @@ class BNReasoner:
     
 if __name__ == "__main__":
     net = BNReasoner("testing/dog_problem.BIFXML")
-    test = net.md_MAP_MPE(['dog-out'], {'hear-bark': True}, "marginal", "random", ['family-out', 'bowel-problem'])
+    test = net.md_MAP_MPE(['dog-out'], {'hear-bark': True}, "marginal", "random")
     print(test)

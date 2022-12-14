@@ -247,7 +247,7 @@ class BNReasoner:
         return CPT
 
 
-    def md_MAP_MPE(self, Q, evidence, func, heuristic):
+    def md_MAP_MPE(self, Q, evidence, func, heuristic, prune=True):
 
         # Q = list of variables (e.g. ['light-on']), but can be empty in case of MPE
         # evidence = a dictionary of the evidence e.g. {'hear-bark': True} or empty {}
@@ -269,11 +269,9 @@ class BNReasoner:
         elif heuristic == "minfill":
             var_elimination = self.order(var_elimination, heuristic)
 
-        # prune the network given the evidence (# reduce all the factors w.r.t. evidence)
-        if evidence != {}:
+        if prune == True:
+            # prune the network given the evidence (# reduce all the factors w.r.t. evidence)
             self.network_pruning(Q, pd.Series(evidence))
-        else:
-            self.network_pruning(Q, pd.Series({}))
 
 
         # compute the probability of the evidence
@@ -385,5 +383,5 @@ class BNReasoner:
     
 if __name__ == "__main__":
     net = BNReasoner("testing/dog_problem.BIFXML")
-    test = net.md_MAP_MPE(['dog-out'], {'hear-bark': True}, "marginal", "random")
+    test = net.md_MAP_MPE(['dog-out'], {}, "marginal", "minfill", False)
     print(test)

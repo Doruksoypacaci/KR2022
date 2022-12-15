@@ -87,12 +87,15 @@ class BNReasoner:
 
         return newcpt
 
-    def maxing_out(self, CPT, X):
+def maxing_out(self, CPT, X):
         """
         Given a factor and a variable X, compute the CPT in which X is maxed-out. Remember to also keep track 
         of which instantiation of X led to the maximized value.
         """
-        maximized_out = CPT.groupby(X).max().reset_index()
+        CPT = CPT.drop(X,axis=1)
+        X_dropped = list(CPT.columns)
+        X_dropped.pop(-1)
+        maximized_out = CPT.groupby(X_dropped).max().reset_index()
         return X, maximized_out
     
 

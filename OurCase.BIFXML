@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--Author: Maxime Dassen, Doruk Soypacaci and Femke Augustinus
+    Bayesian network in XMLBIF v0.3 (BayesNet Interchange Format)
+ -->
+
+<!-- DTD for the XMLBIF 0.3 format -->
+<!DOCTYPE BIF [
+	<!ELEMENT BIF ( NETWORK )*>
+	      <!ATTLIST BIF VERSION CDATA #REQUIRED>
+	<!ELEMENT NETWORK ( NAME, ( PROPERTY | VARIABLE | DEFINITION )* )>
+	<!ELEMENT NAME (#PCDATA)>
+	<!ELEMENT VARIABLE ( NAME, ( OUTCOME |  PROPERTY )* ) >
+	      <!ATTLIST VARIABLE TYPE (nature|decision|utility) "nature">
+	<!ELEMENT OUTCOME (#PCDATA)>
+	<!ELEMENT DEFINITION ( FOR | GIVEN | TABLE | PROPERTY )* >
+	<!ELEMENT FOR (#PCDATA)>
+	<!ELEMENT GIVEN (#PCDATA)>
+	<!ELEMENT TABLE (#PCDATA)>
+	<!ELEMENT PROPERTY (#PCDATA)>
+]>
+
+<BIF VERSION="0.3">
+<NETWORK>
+<NAME>Mood-Predictor-Based-on-Movies</NAME>
+
+<!-- Variables-->
+<VARIABLE TYPE="nature">
+    <NAME>Thriller</NAME>
+    <OUTCOME>True</OUTCOME>
+    <OUTCOME>False</OUTCOME>
+</VARIABLE>
+
+<VARIABLE TYPE="nature">
+    <NAME>Sci-Fi</NAME>
+    <OUTCOME>True</OUTCOME>
+    <OUTCOME>False</OUTCOME>
+</VARIABLE>
+
+<VARIABLE TYPE="nature">
+    <NAME>Comedy</NAME>
+    <OUTCOME>True</OUTCOME>
+    <OUTCOME>False</OUTCOME>
+</VARIABLE>
+
+<VARIABLE TYPE="nature">
+    <NAME>Drama</NAME>
+    <OUTCOME>True</OUTCOME>
+    <OUTCOME>False</OUTCOME>
+</VARIABLE>
+
+<VARIABLE TYPE="nature">
+    <NAME>Angry</NAME>
+    <OUTCOME>True</OUTCOME>
+    <OUTCOME>False</OUTCOME>
+</VARIABLE>
+
+<VARIABLE TYPE="nature">
+    <NAME>Sad</NAME>
+    <OUTCOME>True</OUTCOME>
+    <OUTCOME>False</OUTCOME>
+</VARIABLE>
+
+<VARIABLE TYPE="nature">
+    <NAME>Happy</NAME>
+    <OUTCOME>True</OUTCOME>
+    <OUTCOME>False</OUTCOME>
+</VARIABLE>
+
+<VARIABLE TYPE="nature">
+    <NAME>Stressed</NAME>
+    <OUTCOME>True</OUTCOME>
+    <OUTCOME>False</OUTCOME>
+</VARIABLE>
+
+<VARIABLE TYPE="nature">
+    <NAME>Tired</NAME>
+    <OUTCOME>True</OUTCOME>
+    <OUTCOME>False</OUTCOME>
+</VARIABLE>
+
+<VARIABLE TYPE="nature">
+    <NAME>Pessimistic</NAME>
+    <OUTCOME>True</OUTCOME>
+    <OUTCOME>False</OUTCOME>
+</VARIABLE>
+
+<VARIABLE TYPE="nature">
+    <NAME>Lonely</NAME>
+    <OUTCOME>True</OUTCOME>
+    <OUTCOME>False</OUTCOME>
+</VARIABLE>
+
+<VARIABLE TYPE="nature">
+    <NAME>Optimistic</NAME>
+    <OUTCOME>True</OUTCOME>
+    <OUTCOME>False</OUTCOME>
+</VARIABLE>
+<VARIABLE TYPE="nature">
+    <NAME>Peaceful</NAME>
+    <OUTCOME>True</OUTCOME>
+    <OUTCOME>False</OUTCOME>
+</VARIABLE>
+
+<!-- Conditional Probability Tables -->
+<DEFINITION>
+    <FOR>Thriller</FOR>
+    <TABLE>0.2 0.8</TABLE> 
+</DEFINITION>
+
+<DEFINITION>
+    <FOR>Sci-Fi</FOR>
+    <TABLE>0.4 0.6</TABLE> 
+</DEFINITION>
+
+<DEFINITION>
+    <FOR>Comedy</FOR>
+    <TABLE>0.2 0.8</TABLE> 
+</DEFINITION>
+
+<DEFINITION>
+    <FOR>Drama</FOR>
+    <TABLE>0.3 0.7</TABLE> 
+</DEFINITION>
+
+<DEFINITION>
+    <FOR>Sad</FOR>
+    <GIVEN>Drama</GIVEN>
+    <GIVEN>Comedy</GIVEN>
+    <TABLE>0.5 0.5 0.3 0.7 0.8 0.2 0.7 0.3</TABLE> 
+</DEFINITION>
+
+<DEFINITION>
+    <FOR>Angry</FOR>
+    <GIVEN>Thriller</GIVEN>
+    <GIVEN>Comedy</GIVEN>
+    <TABLE>0.5 0.5 0.3 0.7 0.8 0.2 0.88 0.12</TABLE> 
+</DEFINITION>
+
+<DEFINITION>
+    <FOR>Tired</FOR>
+    <GIVEN>Sad</GIVEN>
+    <GIVEN>Angry</GIVEN>
+    <TABLE>0.5 0.5 0.3 0.7 0.4 0.6 0.2 0.8</TABLE> 
+</DEFINITION>
+
+<DEFINITION>
+    <FOR>Lonely</FOR>
+    <GIVEN>Drama</GIVEN>
+    <GIVEN>Thriller</GIVEN>
+    <TABLE>0.5 0.5 0.4 0.6 0.2 0.8 0.1 0.9</TABLE> 
+</DEFINITION>
+
+<DEFINITION>
+    <FOR>Peaceful</FOR>
+    <GIVEN>Lonely</GIVEN>
+    <GIVEN>Happy</GIVEN>
+    <TABLE>0.5 0.5 0.7 0.3 0.1 0.9 0.05 0.95</TABLE> 
+</DEFINITION>
+
+<DEFINITION>
+    <FOR>Stressed</FOR>
+    <GIVEN>Angry</GIVEN>
+    <GIVEN>Sad</GIVEN>
+    <TABLE>0.5 0.5 0.2 0.8 0.15 0.85 0.05 0.95</TABLE> 
+</DEFINITION>
+
+<DEFINITION>
+    <FOR>Pessimistic</FOR>
+    <GIVEN>Lonely</GIVEN>
+    <GIVEN>Tired</GIVEN>
+    <GIVEN>Stressed</GIVEN>
+    <TABLE>0.5 0.5 0.42 0.58 0.3 0.7 0.2 0.8 0.1 0.90 0.05 0.95 0.04 0.96 0.01 0.99</TABLE> 
+</DEFINITION>
+
+<DEFINITION>
+    <FOR>Happy</FOR>
+    <GIVEN>Comedy</GIVEN>
+    <GIVEN>Thriller</GIVEN>
+    <GIVEN>Sci-Fi</GIVEN>
+    <TABLE>0.5 0.5 0.2 0.8 0.6 0.4 0.3 0.7 0.45 0.55 0.35 0.65 0.7 0.3 0.15 0.85</TABLE> 
+</DEFINITION>
+
+<DEFINITION>
+    <FOR>Optimistic</FOR>
+    <GIVEN>Tired</GIVEN>
+    <GIVEN>Happy</GIVEN>
+    <TABLE>0.5 0.5 0.65 0.35 0.2 0.8 0.45 0.55</TABLE>
+
+</DEFINITION>
+</NETWORK>
+</BIF>

@@ -326,7 +326,7 @@ class BNReasoner:
                 # sum-out Q to obtain probability of evidence and to elimate the variables
                 # only multiply when there are more than one cpt
                 if len(f_v) >= 2:
-                    m_cpt = self.factor_multiplication(list(f_v.values()))
+                    new_cpt = self.factor_multiplication(list(f_v.values()))
 
                     # delete the variables from the dictionary M
                     for f in f_v:
@@ -400,8 +400,4 @@ class BNReasoner:
 if __name__ == "__main__":
 
     net = BNReasoner("OurCase.BIFXML")
-    list_vars = list(net.bn.get_all_variables())
-    print(list_vars)
-    # print(net.bn.draw_structure())
-    # Q=
-    result = net.md_MAP_MPE([], {'Comedy' : True}, 'MPE', 'random', prune=True)
+ 

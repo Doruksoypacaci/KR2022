@@ -87,15 +87,12 @@ class BNReasoner:
 
         return newcpt
 
-def maxing_out(self, CPT, X):
+    def maxing_out(self, CPT, X):
         """
         Given a factor and a variable X, compute the CPT in which X is maxed-out. Remember to also keep track 
         of which instantiation of X led to the maximized value.
         """
-        CPT = CPT.drop(X,axis=1)
-        X_dropped = list(CPT.columns)
-        X_dropped.pop(-1)
-        maximized_out = CPT.groupby(X_dropped).max().reset_index()
+        maximized_out = CPT.groupby(X).max().reset_index()
         return X, maximized_out
     
 
@@ -258,6 +255,7 @@ def maxing_out(self, CPT, X):
         # MAP: sum out V/Q and then max-out Q (argmax)
         # MPE: maximize out all variables with extended factors
 
+
         # get a list of all variables which are not in Q
         var_elimination = []
         for v in self.bn.get_all_variables():
@@ -272,10 +270,10 @@ def maxing_out(self, CPT, X):
         elif heuristic == "minfill":
             var_elimination = self.order(var_elimination, heuristic)
 
+
         if prune == True:
             # prune the network given the evidence (# reduce all the factors w.r.t. evidence)
             self.network_pruning(Q, pd.Series(evidence))
-
 
         # compute the probability of the evidence
         e_factor = 1
@@ -296,32 +294,47 @@ def maxing_out(self, CPT, X):
             for cpt_v in M: 
                 if v in M[cpt_v]:
                     f_v[cpt_v] = M[cpt_v]
+            
+            if func != "MPE":
+                # sum-out Q to obtain probability of evidence and to elimate the variables
+                # only multiply when there are more than one cpt
+                if len(f_v) >= 2:
+                    m_cpt = self.factor_multiplication(list(f_v.values()))
+                    new_cpt = self.variable_elimination(m_cpt, [v])   
 
-            # sum-out Q to obtain probability of evidence and to elimate the variables
-            # only multiply when there are more than one cpt
-            if len(f_v) >= 2:
-                m_cpt = self.factor_multiplication(list(f_v.values()))
-                new_cpt = self.variable_elimination(m_cpt, [v])   
+                    # delete the variables from the dictionary M
+                    for f in f_v:
+                        del M[f]
+                    
+                    # add the new cpt to the dictionary M
+                    factor +=1
+                    M["F"+str(factor)] = new_cpt
 
-                # delete the variables from the dictionary M
-                for f in f_v:
-                    del M[f]
-                
-                # add the new cpt to the dictionary M
-                factor +=1
-                M["F"+str(factor)] = new_cpt
+                # skip multiplication when there is only one cpt
+                elif len(f_v) == 1:
+                    new_cpt = self.variable_elimination(list(f_v.values())[0], [v])
+                    
+                    # delete the variables from the dictionary M
+                    for f in f_v:
+                        del M[f]
+                    
+                    # add the new cpt to the dictionary M
+                    factor +=1
+                    M["F"+str(factor)] = new_cpt
+            
+            else:
+                # sum-out Q to obtain probability of evidence and to elimate the variables
+                # only multiply when there are more than one cpt
+                if len(f_v) >= 2:
+                    m_cpt = self.factor_multiplication(list(f_v.values()))
 
-            # skip multiplication when there is only one cpt
-            elif len(f_v) == 1:
-                new_cpt = self.variable_elimination(list(f_v.values())[0], [v])
-                
-                # delete the variables from the dictionary M
-                for f in f_v:
-                    del M[f]
-                
-                # add the new cpt to the dictionary M
-                factor +=1
-                M["F"+str(factor)] = new_cpt
+                    # delete the variables from the dictionary M
+                    for f in f_v:
+                        del M[f]
+                    
+                    # add the new cpt to the dictionary M
+                    factor +=1
+                    M["F"+str(factor)] = new_cpt
 
         # compute joint probability of Q and evidence
         if len(M) > 1:
@@ -329,12 +342,12 @@ def maxing_out(self, CPT, X):
         else:
             joint_prob = list(M.values())[0]
 
-        # divide by the probability of the evidence
-        joint_prob['p'] = joint_prob['p'] / (e_factor)
-
         # check what is expected of the function
         if func == 'marginal':
+            # divide by the probability of the evidence
+            joint_prob['p'] = joint_prob['p'] / (e_factor)
             return joint_prob
+
         if func == 'MAP':
             return joint_prob.iloc[joint_prob['p'].argmax()]
         if func == 'MPE':
@@ -385,6 +398,10 @@ def maxing_out(self, CPT, X):
                 self.bn.del_edge((node, child))
     
 if __name__ == "__main__":
-    net = BNReasoner("testing/dog_problem.BIFXML")
-    test = net.md_MAP_MPE(['dog-out'], {}, "marginal", "minfill", False)
-    print(test)
+
+    net = BNReasoner("OurCase.BIFXML")
+    list_vars = list(net.bn.get_all_variables())
+    print(list_vars)
+    # print(net.bn.draw_structure())
+    # Q=
+    result = net.md_MAP_MPE([], {'Comedy' : True}, 'MPE', 'random', prune=True)
